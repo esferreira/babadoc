@@ -42,8 +42,9 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# babadoc local storage
+# babadoc local storage (user-uploaded images)
 /uploads/
+/public/uploads/
 
 # prisma sqlite
 prisma/dev.db
