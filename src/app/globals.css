@@ -657,3 +657,107 @@ body {
   }
 }
 
+/* ====== PORTABILITY (IMPORT/EXPORT) ====== */
+.portability-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-muted);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.portability-card:hover {
+  border-color: rgba(212,160,23,0.25);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.portability-card-header {
+  padding: 16px 20px;
+  background: linear-gradient(180deg, var(--bg-card), var(--bg-elevated));
+}
+
+.portability-icon-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.portability-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-muted);
+}
+
+.portability-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 16px;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 140px;
+}
+.portability-dropzone:hover {
+  border-color: var(--text-muted);
+  background: rgba(212,160,23,0.03);
+}
+.portability-dropzone.active {
+  border-color: var(--accent);
+  background: rgba(212,160,23,0.06);
+  box-shadow: 0 0 0 3px rgba(212,160,23,0.12);
+}
+.portability-dropzone.has-file {
+  border-color: var(--success);
+  border-style: solid;
+  background: rgba(34,197,94,0.05);
+}
+
+.portability-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #fca5a5;
+}
+
+.portability-result {
+  padding: 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(34,197,94,0.06), rgba(34,197,94,0.02));
+  border: 1px solid rgba(34,197,94,0.25);
+}
+
+.portability-stat-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 8px;
+  border-radius: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-muted);
+  text-align: center;
+}
+
+@keyframes portability-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.portability-spinner {
+  display: inline-block;
+  animation: portability-spin 1s linear infinite;
+}

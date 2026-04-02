@@ -27,6 +27,7 @@ const navItems = [
   { href: "/graph", icon: "🕸️", label: "Grafo" },
   { href: "/reviews", icon: "📅", label: "Revisões" },
   { href: "/template", icon: "📄", label: "Gerar Template" },
+  { href: "/portability", icon: "🔄", label: "Portabilidade" },
 ];
 
 interface SidebarProps {
