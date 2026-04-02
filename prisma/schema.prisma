@@ -1,0 +1,281 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ====== HIERARQUIA CORPORATIVA ======
+model Organization {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  areas     Area[]
+}
+
+model Area {
+  id             String       @id @default(cuid())
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  artifacts      Artifact[]
+
+  @@unique([organizationId, name])
+}
+
+// ====== ARTIFACT (Entidade Central) ======
+model Artifact {
+  id                 String   @id @default(cuid())
+  canonicalName      String   @unique
+  displayName        String
+  artifactType       String   // 'data_product', 'process', 'troubleshooting', 'rule', 'decision', 'concept', 'glossary', 'system'
+  status             String   @default("draft") // 'draft', 'published', 'deprecated', 'archived'
+  documentationScore Float?
+  areaId             String
+  area               Area     @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  ownerId            String?
+  owner              User?    @relation("OwnedArtifacts", fields: [ownerId], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  facets        Facet[]
+  tags          ArtifactTag[]
+  relationsFrom ArtifactRelationship[] @relation("SourceArtifact")
+  relationsTo   ArtifactRelationship[] @relation("TargetArtifact")
+  auditLogs     AuditLog[]
+  viewLogs      ViewLog[]
+  favorites     Favorite[]
+  comments      Comment[]
+  reviewSchedule ReviewSchedule?
+}
+
+// ====== PERGUNTAS DO ROTEIRO ======
+model Question {
+  id          String   @id @default(cuid())
+  order       Int      @unique
+  title       String
+  description String?
+  category    String   // 'BUSINESS', 'TECHNICAL', 'DELIVERY'
+  subCategory String?  // '1.1 Contexto e Definição', '2.1 Arquitetura e Dados', etc
+  priority    String   // 'MUST', 'NICE' — prioridade DEFAULT (fallback)
+  facetType   String   // Mapeia para o tipo de Faceta
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  facets      Facet[]
+  viewLogs    ViewLog[]
+  applicability QuestionApplicability[]
+  comments    Comment[]
+}
+
+// ====== APLICABILIDADE POR TIPO DE ARTEFATO ======
+// Permite definir se uma pergunta é MUST, NICE ou N/A para cada tipo de artefato.
+// Se não há registro para um (questionId, artifactType), usa Question.priority como fallback.
+model QuestionApplicability {
+  id           String   @id @default(cuid())
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  artifactType String   // 'data_product', 'process', 'troubleshooting', etc
+  priority     String   // 'MUST', 'NICE', 'NA'
+  createdAt    DateTime @default(now())
+
+  @@unique([questionId, artifactType])
+  @@index([artifactType])
+}
+
+// ====== FACETS (Respostas versionadas + Soft Delete) ======
+model Facet {
+  id              String    @id @default(cuid())
+  artifactId      String
+  artifact        Artifact  @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  questionId      String?
+  question        Question? @relation(fields: [questionId], references: [id])
+  facetType       String
+  targetAudience  String    @default("both") // 'business', 'technical', 'both'
+
+  contentMarkdown String?
+  contentJson     String?
+
+  version    Int    @default(1)
+  status     String @default("CURRENT") // 'CURRENT', 'COMPLEMENT', 'ARCHIVED'
+  previousId String?
+
+  authorId  String
+  author    User     @relation("AuthoredFacets", fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Soft Delete
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("DeletedFacets", fields: [deletedById], references: [id])
+
+  attachments Attachment[]
+}
+
+// ====== ATTACHMENTS (Armazenamento Local) ======
+model Attachment {
+  id           String   @id @default(cuid())
+  originalName String
+  storedPath   String   // Caminho relativo em /uploads/ (ex: artifacts/cuid123/image.png)
+  mimeType     String
+  sizeBytes    Int
+  type         String   // 'IMAGE', 'DOCUMENT', 'LINK'
+  facetId      String
+  facet        Facet    @relation(fields: [facetId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}
+
+// ====== TAGS / TAXONOMIA ======
+model Tag {
+  id        String        @id @default(cuid())
+  category  String        // 'domain', 'technology', 'zone', 'criticality'
+  value     String
+  color     String?
+  icon      String?
+  artifacts ArtifactTag[]
+
+  @@unique([category, value])
+}
+
+model ArtifactTag {
+  artifactId String
+  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  tagId      String
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([artifactId, tagId])
+}
+
+// ====== KNOWLEDGE GRAPH ======
+model ArtifactRelationship {
+  id               String   @id @default(cuid())
+  sourceArtifactId String
+  sourceArtifact   Artifact @relation("SourceArtifact", fields: [sourceArtifactId], references: [id], onDelete: Cascade)
+  targetArtifactId String
+  targetArtifact   Artifact @relation("TargetArtifact", fields: [targetArtifactId], references: [id], onDelete: Cascade)
+  relationshipType String   // 'feeds_into', 'derived_from', 'depends_on', 'implements', 'related_to', 'consumed_by'
+  description      String?
+  createdAt        DateTime @default(now())
+
+  @@unique([sourceArtifactId, targetArtifactId, relationshipType])
+}
+
+// ====== AUDIT LOG ======
+model AuditLog {
+  id          String    @id @default(cuid())
+  entityType  String    // 'artifact', 'facet', 'tag', 'question', 'user'
+  entityId    String
+  action      String    // 'create', 'update', 'delete', 'soft_delete', 'publish', 'restore'
+  detail      String?   // Descrição legível da ação
+  oldValues   String?
+  newValues   String?
+  performedBy String?
+  user        User?     @relation(fields: [performedBy], references: [id])
+  artifactId  String?
+  artifact    Artifact? @relation(fields: [artifactId], references: [id])
+  ipAddress   String?
+  performedAt DateTime  @default(now())
+}
+
+// ====== ANALYTICS - VIEW LOG ======
+model ViewLog {
+  id          String    @id @default(cuid())
+  artifactId  String
+  artifact    Artifact  @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  questionId  String?
+  question    Question? @relation(fields: [questionId], references: [id])
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  durationMs  Int?      // Tempo de exposição em ms
+  viewedAt    DateTime  @default(now())
+
+  @@index([artifactId])
+  @@index([questionId])
+  @@index([viewedAt])
+}
+
+// ====== AUTH ======
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  name           String?
+  hashedPassword String
+  role           String     @default("member") // 'admin', 'editor', 'member'
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @default(now()) @updatedAt
+  ownedArtifacts Artifact[] @relation("OwnedArtifacts")
+  authoredFacets Facet[]    @relation("AuthoredFacets")
+  deletedFacets  Facet[]    @relation("DeletedFacets")
+  auditLogs      AuditLog[]
+  viewLogs       ViewLog[]
+  favorites      Favorite[]
+  comments       Comment[]
+  notifications  Notification[]
+}
+
+// ====== NOTIFICATIONS ======
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // 'NEW_FACET', 'NEW_COMMENT', 'REVIEW_REQUIRED', 'ARTIFACT_UPDATED'
+  title     String
+  message   String?
+  link      String?  // /artifacts/cuid123
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ====== FAVORITES ======
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artifactId String
+  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, artifactId])
+  @@index([userId])
+}
+
+// ====== COMMENTS ======
+model Comment {
+  id         String   @id @default(cuid())
+  content    String
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  artifactId String
+  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  questionId String?
+  question   Question? @relation(fields: [questionId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([artifactId])
+  @@index([questionId])
+}
+
+// ====== REVIEW SCHEDULE ======
+model ReviewSchedule {
+  id              String   @id @default(cuid())
+  artifactId      String
+  artifact        Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  frequencyDays   Int      @default(90) // 30, 60, 90, 180, 365
+  lastReviewedAt  DateTime?
+  nextReviewAt    DateTime?
+  createdAt       DateTime @default(now())
+
+  @@unique([artifactId])
+}
+
