@@ -13,10 +13,10 @@ async function main() {
   // ====== 1. CREATE ADMIN USER ======
   const hashedPassword = await hash("admin123", 12);
   const admin = await prisma.user.upsert({
-    where: { email: "admin@empresa.com" },
+    where: { email: "admin@babadoc.local" },
     update: {},
     create: {
-      email: "admin@empresa.com",
+      email: "admin@babadoc.local",
       name: "Administrador",
       hashedPassword,
       role: "admin",

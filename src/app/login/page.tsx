@@ -199,7 +199,7 @@ export default function LoginPage() {
                 required
                 value={fields.email}
                 onChange={handleChange}
-                placeholder="seu@empresa.com"
+                placeholder="admin@babadoc.local"
                 className="baba-input"
                 disabled={isPending}
               />

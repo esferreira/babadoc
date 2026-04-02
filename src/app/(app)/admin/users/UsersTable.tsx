@@ -69,7 +69,7 @@ export function UsersTable({ users: initialUsers }: { users: User[] }) {
         <form onSubmit={handleCreate} className="baba-card p-5 mb-4 grid grid-cols-2 gap-4 animate-fade-in">
           <div>
             <label className="baba-label">Email *</label>
-            <input name="email" type="email" required className="baba-input" placeholder="user@empresa.com" />
+            <input name="email" type="email" required className="baba-input" placeholder="usuario@babadoc.local" />
           </div>
           <div>
             <label className="baba-label">Nome</label>

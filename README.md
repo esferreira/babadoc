@@ -151,31 +151,42 @@ cd babadoc
 # 2. Instale as dependências
 npm install
 
-# 3. Configure o ambiente
-cp .env.example .env
-# Edite o .env com sua AUTH_SECRET (gere com: npx auth secret)
+# 3. Configure o banco de dados + usuário admin + 38 perguntas
+npm run setup
+# Este comando executa: prisma generate → db push → seed
+# Cria automaticamente:
+#   ✅ Banco SQLite (prisma/dev.db)
+#   ✅ Usuário admin (admin@babadoc.local / admin123)
+#   ✅ 38 perguntas do Roteiro Discovery
+#   ✅ Organização e área padrão
 
-# 4. Gere o client Prisma e aplique as migrações
-npx prisma generate
-npx prisma db push
-
-# 5. Popule o banco com as 38 perguntas e dados iniciais
-npx prisma db seed
-
-# 6. Inicie o servidor de desenvolvimento
+# 4. Inicie o servidor
 npm run dev
 ```
 
 Acesse **[http://localhost:3000](http://localhost:3000)** e faça login com:
-- **Email:** `admin@empresa.com`
+- **Email:** `admin@babadoc.local`
 - **Senha:** `admin123`
 
-### Variáveis de Ambiente
+> 💡 **Dica:** Após o primeiro login, altere a senha e crie novos usuários pelo painel Admin.
+
+### Scripts Disponíveis
+
+| Script | Comando | Descrição |
+|--------|---------|-----------|
+| `setup` | `npm run setup` | Inicializa banco + seed (rodar 1x após clone) |
+| `dev` | `npm run dev` | Servidor de desenvolvimento |
+| `build` | `npm run build` | Build de produção |
+| `start` | `npm run start` | Servidor de produção |
+
+### Variáveis de Ambiente (Opcional)
 
 ```env
 AUTH_SECRET=sua-chave-secreta-aqui      # Gere com: npx auth secret
 AUTH_TRUST_HOST=true                    # Para desenvolvimento local
 ```
+> Se nenhuma variável de ambiente for definida, o projeto usa valores padrão para desenvolvimento local.
+
 
 ---
 
