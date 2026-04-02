@@ -20,6 +20,10 @@
   os times buscam o Babadoc para encontrar a verdade sobre seus dados."</em>
 </p>
 
+<p align="center">
+  <img src="public/images/babadoc-infographic.png" alt="Babadoc Infographic" width="600" />
+</p>
+
 ---
 
 ## 🎯 O Problema
