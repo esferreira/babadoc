@@ -354,7 +354,7 @@ export default function TemplatePage() {
               type="text"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
-              placeholder="Ex: P3M, Smartcheck, Anaplan..."
+              placeholder="Ex: Pipeline Vendas, Dashboard KPI, ETL Produção..."
               className="baba-input"
             />
           </div>

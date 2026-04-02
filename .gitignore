@@ -52,3 +52,33 @@ prisma/dev.db-journal
 
 # local utility scripts (may contain credentials)
 scripts/
+
+# local investigation files, notebooks, and data dumps
+*.py
+*.txt
+*.log
+*.mmd
+*.csv
+
+# corporate seed files (only seed.ts is safe for repo)
+prisma/seed-*.ts
+prisma/extract_*.py
+prisma/delete-edge.ts
+prisma/check_questions.ts
+prisma/query.ts
+prisma/reset-*.ts
+prisma/*.json
+prisma/*.py
+
+# local JSON data dumps (may contain corporate data)
+docs_ai_*.json
+*_lineage_*.json
+*_payload.json
+
+# notebook exports
+notebook_*.py
+
+# build error logs
+build_error_*.txt
+output.log
+*_resultado*.txt
